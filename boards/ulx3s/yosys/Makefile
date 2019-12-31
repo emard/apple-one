@@ -18,13 +18,13 @@ dir:
 
 # ------ TEMPLATES ------
 $(BUILDDIR)/%.json: $(SOURCEDIR)/%.v
-	yosys -q -p "chparam -list; hierarchy -top apple1_top; synth_ecp5 -json $@" $^
+	$(YOSYS) -q -p "chparam -list; hierarchy -top apple1_top; synth_ecp5 -json $@" $^
 
 $(BUILDDIR)/%.config: $(PIN_DEF) $(BUILDDIR)/%.json
-	 nextpnr-ecp5 --${DEVICE} --package CABGA381 --freq 25 --textcfg  $@ --json $(filter-out $<,$^) --lpf $< 
+	$(NEXTPNR-ECP5) --${DEVICE} --package CABGA381 --freq 25 --textcfg  $@ --json $(filter-out $<,$^) --lpf $< 
 
 $(BUILDDIR)/%.bit: $(BUILDDIR)/%.config
-	ecppack --idcode ${IDCODE} $^ $@
+	$(ECPPACK) --idcode ${IDCODE} --compress $^ $@
 
 %_tb.vvp: %_tb.v %.v
 	iverilog -o $@ $^
@@ -67,3 +67,5 @@ clean:
 
 .SECONDARY:
 .PHONY: all info clean prog
+
+include trellis_defs.mk
